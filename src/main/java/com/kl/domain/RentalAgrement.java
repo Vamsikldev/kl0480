@@ -18,13 +18,22 @@ public class RentalAgrement {
     private  double finalCharge;
 
     public  void printRentalAgrement() {
-        SimpleDateFormat DateFormat = new SimpleDateFormat("MM/dd/yy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
         DecimalFormat currencyFormat = new DecimalFormat("#,###.00");
         DecimalFormat percentFormat = new DecimalFormat("#%");
         System.out.println("Tool Code: "+tool.getToolCode());
         System.out.println("Tool Type: "+tool.getToolType());
         System.out.println("Tool Brand: "+tool.getBrand());
         System.out.println("Rental Days:" + rentalDays);
+
+
+        System.out.println("Check out date: " + dateFormat.format(checkout));
+        System.out.println("Daily rental charge: " + currencyFormat.format(tool.getDailyCharge()));
+        System.out.println("Charge days: " + chargeDays);
+        System.out.println("Pre-discount charge: " + currencyFormat.format(discountCharge));
+        System.out.println("Discount percent: " + percentFormat.format(discountPercentage / 100.0));
+        System.out.println("Discount amount: " + currencyFormat.format(discountAmt));
+        System.out.println("Final charge: " + currencyFormat.format(finalCharge));
 
     }
 
@@ -37,6 +46,7 @@ public class RentalAgrement {
         this.discountPercentage = discountPercentage;
         this.discountAmt = discountAmt;
         this.finalCharge = finalCharge;
+
     }
 
     public Tool getTool() {
