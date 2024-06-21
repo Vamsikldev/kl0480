@@ -20,17 +20,9 @@ public class RentalService {
     }
 
     public RentalAgrement checkout(String toolCode, int rentalDays, int discountPercent, Date checkoutDate) {
-        if (rentalDays < 1) {
-            throw new IllegalArgumentException("Rental day count must be 1 or greater.");
-        }
-        if (discountPercent < 0 || discountPercent > 100) {
-            throw new IllegalArgumentException("Discount percent must be between 0 and 100.");
-        }
 
         Tool tool = toolsDB.get(toolCode);
-        if (tool == null) {
-            throw new IllegalArgumentException("Invalid tool code.");
-        }
+
 
         int chargeDays = calcualteChargesDays(tool, rentalDays, checkoutDate);
         double preDiscountCharge = chargeDays * tool.getDailyCharge();

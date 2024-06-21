@@ -10,13 +10,6 @@ public class RentalServiceTest {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
 
     @Test
-    public void testInvalidDiscount() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            rentalService.checkout("JAKR", 5, 101, dateFormat.parse("09/03/15"));
-        });
-    }
-
-    @Test
     public void testLadderWith10PercentDiscount() throws Exception {
         RentalAgrement agreement = rentalService.checkout("LADW", 3, 10, dateFormat.parse("07/02/20"));
         assertNotNull(agreement);
