@@ -2,6 +2,9 @@ package com.kl;
 import com.kl.domain.RentalAgrement;
 import org.junit.jupiter.api.Test;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,6 +36,7 @@ public class RentalServiceTest {
     @Test
     public void testJackhammerWithNoDiscountOverHoliday() throws Exception {
         RentalAgrement agreement = rentalService.checkout("JAKR", 9, 0, dateFormat.parse("07/02/15"));
-
+        assertNotNull(agreement);
+        agreement.printRentalAgrement();
     }
 }

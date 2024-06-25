@@ -17,6 +17,10 @@ public class RentalAgrement {
     private double discountAmt;
     private  double finalCharge;
 
+    /**
+     *  To print the agrement details while checkout
+     */
+
     public  void printRentalAgrement() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
         DecimalFormat currencyFormat = new DecimalFormat("#,###.00");
@@ -37,6 +41,17 @@ public class RentalAgrement {
 
     }
 
+    /**
+     *
+     * @param tool tool details.
+     * @param rentalDays number of rental days
+     * @param checkout checkout date
+     * @param chargeDays number of dasys the tool expected to hold.
+     * @param discountCharge to hold discount charge
+     * @param discountPercentage to hold discount percentage
+     * @param discountAmt to hold discountAmout
+     * @param finalCharge to hold final charge
+     */
     public RentalAgrement(Tool tool, int rentalDays, Date checkout, int chargeDays, double discountCharge, int discountPercentage, double discountAmt, double finalCharge) {
         this.tool = tool;
         this.rentalDays = rentalDays;
