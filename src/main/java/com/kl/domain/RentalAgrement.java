@@ -26,13 +26,13 @@ public class RentalAgrement {
         DecimalFormat currencyFormat = new DecimalFormat("#,###.00");
         DecimalFormat percentFormat = new DecimalFormat("#%");
         System.out.println("Tool Code: "+tool.getToolCode());
-        System.out.println("Tool Type: "+tool.getToolType());
+        System.out.println("Tool Type: "+tool.getType());
         System.out.println("Tool Brand: "+tool.getBrand());
         System.out.println("Rental Days:" + rentalDays);
 
 
         System.out.println("Check out date: " + dateFormat.format(checkout));
-        System.out.println("Daily rental charge: " + currencyFormat.format(tool.getDailyCharge()));
+        System.out.println("Daily rental charge: " + currencyFormat.format(tool.getDailyRentalCharge()));
         System.out.println("Charge days: " + chargeDays);
         System.out.println("Pre-discount charge: " + currencyFormat.format(discountCharge));
         System.out.println("Discount percent: " + percentFormat.format(discountPercentage / 100.0));

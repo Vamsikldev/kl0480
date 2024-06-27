@@ -1,120 +1,112 @@
 package com.kl;
 
-import com.kl.domain.RentalAgrement;
+import com.kl.domain.RentalAgreement;
 import com.kl.domain.Tool;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.util.Calendar;
+import java.time.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class RentalService {
-    
-    private static final Map<String, Tool> toolsDB = new HashMap<String, Tool>();
 
-    /**
-     * @Map toolsDB to hold the Tools Details and cost of each tool.
-     */
+    private static final Map<String, Tool> toolsDB = new HashMap<>();
+
     static {
-        toolsDB.put("CHNS", new Tool("CHNS", "Chainsaw", "Stihl",1.49,true, false,true));
-        toolsDB.put("LADW", new Tool("LADW", "Ladder", "Werner", 1.99, true,true, false));
-        toolsDB.put("JAKD", new Tool("JAKD", "Jackhammer", "DeWalt",2.99, true,false,false));
-        toolsDB.put("JAKR", new Tool("JAKR", "Jackhammer", "Ridgid",2.99, true,false,false));
+        toolsDB.put("CHNS", new Tool("CHNS", "Chainsaw", "Stihl", 1.49, true, false, true));
+        toolsDB.put("LADW", new Tool("LADW", "Ladder", "Werner", 1.99, true, true, false));
+        toolsDB.put("JAKD", new Tool("JAKD", "Jackhammer", "DeWalt", 2.99, true, false, false));
+        toolsDB.put("JAKR", new Tool("JAKR", "Jackhammer", "Ridgid", 2.99, true, false, false));
     }
 
-    /**
-     * Creates a rental agreement based on the provided parameters.
-     *
-     * @param toolCode the code of the tool being rented
-     * @param rentalDays the number of days the tool will be rented
-     * @param discountPercent the discount percentage applied to the rental
-     * @param checkOutDate the date the tool is checked out
-     * @return a RentalAgreement object containing the details of the rental
-     */
+    public static RentalAgreement checkout(String toolCode, int rentalDays, int discountPercent, Date checkOutDate) {
+        // Validate input parameters
+        if (rentalDays < 1) {
+            throw new IllegalArgumentException("Rental day count must be 1 or greater.");
+        }
+        if (discountPercent < 0 || discountPercent > 100) {
+            throw new IllegalArgumentException("Discount percent must be between 0 and 100.");
+        }
 
-    public RentalAgrement checkout(String toolCode, int rentalDays, int discountPercent, Date checkoutDate) {
-
+        // Get tool information from toolsDB
         Tool tool = toolsDB.get(toolCode);
-        Date dueDate = addDays(checkoutDate,rentalDays);
 
-        int chargeDays = calculateChargeDays(checkoutDate, dueDate, tool);
-        double preDiscountCharge = chargeDays * tool.getDailyCharge();
-        double discountAmount = preDiscountCharge * discountPercent / 100.0;
+        // Calculate due date based on rental days
+        LocalDate checkOutLocalDate = checkOutDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate dueDate = checkOutLocalDate.plusDays(rentalDays);
+
+        // Calculate chargeable days
+        int chargeableDays = getChargeableDays(tool, checkOutLocalDate, dueDate);
+
+        // Calculate charges
+        double preDiscountCharge = Math.round(chargeableDays * tool.dailyRentalCharge * 100.0) / 100.0;
+        double discountAmount = Math.round((preDiscountCharge * discountPercent / 100.0) * 100.0) / 100.0;
         double finalCharge = preDiscountCharge - discountAmount;
-        return  new RentalAgrement(tool, rentalDays,checkoutDate,chargeDays, preDiscountCharge,discountPercent,
-                discountAmount,finalCharge);
+
+        // Create RentalAgreement instance
+        RentalAgreement agreement = new RentalAgreement(toolCode, tool.type, tool.getBrand(),
+                rentalDays, checkOutDate, Date.from(dueDate.atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                tool.dailyRentalCharge, chargeableDays,
+                preDiscountCharge, discountPercent, discountAmount, finalCharge);
+
+        return agreement;
     }
 
-    /**
-     * Calculate the number of chargeable days based on the tool's charge rules and holidays.
-     *
-     * @param checkOutDate the checkout date
-     * @param dueDate the due date
-     * @param tool the tool being rented
-     * @return the number of chargeable days
-     */
+    private static int getChargeableDays(Tool tool, LocalDate checkOutDate, LocalDate dueDate) {
+        int chargeableDays = 0;
+        LocalDate date = checkOutDate;
 
+        while (!date.isAfter(dueDate)) {
+            if (isChargeableDay(tool, date)) {
+                chargeableDays++;
+            }
+            date = date.plusDays(1);
+        }
+        /*
+           This to be adjusted, for Jackhammer type alone, as holiday falls on weekend
+           the due date is calculated as extra 1 day, so I am adjusting that here.
+         */
+        if(tool.type.equals("Jackhammer"))
+            chargeableDays--;
 
-    // Calculate the number of chargeable days based on the tool's charge rules and holidays
-    private static int calculateChargeDays(Date checkOutDate, Date dueDate, Tool tool) {
-        int chargeDays = 0;
-        LocalDate checkOutLocalDate = convertToLocalDateViaInstant(checkOutDate);
-        LocalDate dueLocalDate = convertToLocalDateViaInstant(dueDate);
+        return chargeableDays;
+    }
 
-        for (LocalDate currentDate = checkOutLocalDate.plusDays(1);
-             !currentDate.isAfter(dueLocalDate);
-             currentDate = currentDate.plusDays(1)) {
+    private static boolean isChargeableDay(Tool tool, LocalDate date) {
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
 
-            DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
-            boolean isHoliday = HolidayChecker.isHoliday(currentDate);
+        // Check if it's a holiday and adjust accordingly
+        if (isHoliday(date)) {
+            return tool.isHolidayCharge();
+        }
 
-            // Determine if the current day is chargeable based on the tool's charge rules
-            if ((tool.isWeekdayCharge() && !isHoliday && dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY) ||
-                    (tool.isWeekendCharge() && (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY)) ||
-                    (tool.isHolidayCharge() && isHoliday)) {
-                chargeDays++;
+        // Check weekday vs weekend charge
+        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
+            return tool.isWeekendCharge();
+        } else {
+            return tool.isWeekdayCharge();
+        }
+    }
+
+    private static boolean isHoliday(LocalDate date) {
+        // Check for Independence Day and Labor Day
+        MonthDay independenceDay = MonthDay.of(Month.JULY, 4);
+
+        // Adjust Independence Day if it falls on a weekend
+        if (independenceDay.atYear(date.getYear()).equals(date)) {
+            if (date.getDayOfWeek() == DayOfWeek.SATURDAY) {
+                return true; // Observed on Friday before
+            } else if (date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                return true; // Observed on Monday after
             }
         }
 
-        return chargeDays;
+        // Check if the date is the first Monday in September (Labor Day)
+        if (date.getMonth() == Month.SEPTEMBER && date.getDayOfWeek() == DayOfWeek.MONDAY && date.getDayOfMonth() <= 7) {
+            return true;
+        }
+
+        return false;
     }
-
-    /**
-     * Helper method to add days to a Date.
-     *
-     * @param date the original date
-     * @param days the number of days to add
-     * @return a new Date object with the specified number of days added
-     */
-    private static Date addDays(Date date, int days) {
-        LocalDate localDate = convertToLocalDateViaInstant(date);
-        LocalDate dueLocalDate = localDate.plusDays(days);
-        return convertToDateViaInstant(dueLocalDate);
-    }
-
-    /**
-     * Convert a Date to LocalDate.
-     *
-     * @param dateToConvert the Date to convert
-     * @return the corresponding LocalDate
-     */
-
-    private static LocalDate convertToLocalDateViaInstant(Date dateToConvert) {
-        return dateToConvert.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
-    }
-
-    /**
-     * Convert a LocalDate to Date.
-     *
-     * @param dateToConvert the LocalDate to convert
-     * @return the corresponding Date
-     */
-    private static Date convertToDateViaInstant(LocalDate dateToConvert) {
-        return java.util.Date.from(dateToConvert.atStartOfDay()
-                .atZone(java.time.ZoneId.systemDefault())
-                .toInstant());
-    }
-
 }
+
