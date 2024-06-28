@@ -7,18 +7,18 @@ import java.util.Date;
  * Represents a rental agreement for a tool rental service.
  */
 public class RentalAgreement {
-    public String toolCode;
-    public String toolType;
-    public String toolBrand;
-    public int rentalDays;
-    public Date checkOutDate;
-    public Date dueDate;
-    public double dailyRentalCharge;
-    public int chargeDays;
-    public double preDiscountCharge;
-    public int discountPercent;
-    public double discountAmount;
-    public double finalCharge;
+    private String toolCode;
+    private String toolType;
+    private String toolBrand;
+    private int rentalDays;
+    private Date checkOutDate;
+    private Date dueDate;
+    private double dailyRentalCharge;
+    private int chargeDays;
+    private double preDiscountCharge;
+    private int discountPercent;
+    private double discountAmount;
+    private double finalCharge;
 
     /**
      * Constructs a RentalAgreement object.
