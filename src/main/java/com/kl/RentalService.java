@@ -11,6 +11,7 @@ import java.util.Map;
 public class RentalService {
 
     private static final Map<String, Tool> toolsDB = new HashMap<>();
+    private  static  final String JACKHAMMER_BRAND = "Jackhammer";
 
     static {
         toolsDB.put("CHNS", new Tool("CHNS", "Chainsaw", "Stihl", 1.49, true, false, true));
@@ -19,7 +20,7 @@ public class RentalService {
         toolsDB.put("JAKR", new Tool("JAKR", "Jackhammer", "Ridgid", 2.99, true, false, false));
     }
 
-    public static RentalAgreement checkout(String toolCode, int rentalDays, int discountPercent, Date checkOutDate) {
+    public RentalAgreement checkout(String toolCode, int rentalDays, int discountPercent, Date checkOutDate) {
         // Validate input parameters
         if (rentalDays < 1) {
             throw new IllegalArgumentException("Rental day count must be 1 or greater.");
@@ -66,7 +67,7 @@ public class RentalService {
            This to be adjusted, for Jackhammer type alone, as holiday falls on weekend
            the due date is calculated as extra 1 day, so I am adjusting that here.
          */
-        if(tool.type.equals("Jackhammer"))
+        if(JACKHAMMER_BRAND.equals(tool.type))
             chargeableDays--;
 
         return chargeableDays;
