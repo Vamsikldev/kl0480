@@ -1,5 +1,7 @@
 package com.kl;
 
+import com.kl.domain.Tool;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
@@ -7,9 +9,15 @@ import java.time.MonthDay;
 
 public class HolidayChecker {
 
-    public static boolean isHoliday(LocalDate date) {
+    private  static  final String CHAINSAW = "Chainsaw";
+    public static boolean isHoliday(LocalDate date, Tool tool) {
+
         // Check for Independence Day
         MonthDay independenceDay = MonthDay.of(Month.JULY, 4);
+
+        if(CHAINSAW.equals(tool.type) && date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                return false;
+        }
 
         // Adjust Independence Day if it falls on a weekend
         if (independenceDay.atYear(date.getYear()).equals(date)) {
